@@ -1,0 +1,23 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno
+.env
+.env.local
+.env.production
+
+# Next.js
+.next/
+
+# Builds
+dist/
+build/
+
+# Logs
+*.log
+
+# Coverage
+coverage/
+
+# Sistema
+.DS_Store
