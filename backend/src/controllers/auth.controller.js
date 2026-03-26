@@ -1,66 +1,50 @@
-const User = require('../models/User');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
-// REGISTER
-exports.register = async (req, res) => {
+dotenv.config();
+
+const createAdmin = async () => {
   try {
-    const { nombre, apellido, email, password, role } = req.body;
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log('✅ MongoDB conectado');
 
-    const existingUser = await User.findOne({ email });
+    const hashedPassword = await bcrypt.hash('Admin1234*', 10);
 
-    if (existingUser) {
-      return res.status(400).json({ message: 'El usuario ya existe' });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = await User.create({
-      nombre,
-      apellido,
-      email,
+    const adminData = {
+      nombre: 'Admin',
+      apellido: 'ToolTrack',
+      email: 'admin@tooltrack.com',
       password: hashedPassword,
-      role: role === 'admin' ? 'user' : role || 'user',
-    });
+      role: 'admin',
+    };
 
-    res.status(201).json(user);
+    const existingAdmin = await User.findOne({ email: 'admin@tooltrack.com' });
+
+    if (existingAdmin) {
+      await User.updateOne(
+        { email: 'admin@tooltrack.com' },
+        { $set: adminData }
+      );
+
+      console.log('✅ Admin actualizado correctamente');
+      console.log('📧 Email: admin@tooltrack.com');
+      console.log('🔑 Password: Admin1234*');
+      process.exit(0);
+    }
+
+    await User.create(adminData);
+
+    console.log('✅ Admin creado correctamente');
+    console.log('📧 Email: admin@tooltrack.com');
+    console.log('🔑 Password: Admin1234*');
+
+    process.exit(0);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('❌ Error creando/actualizando admin:', error.message);
+    process.exit(1);
   }
 };
 
-// LOGIN
-exports.login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: 'Usuario no encontrado' });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Credenciales incorrectas' });
-    }
-
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '1d' }
-    );
-
-    res.json({
-      token,
-      user: {
-        id: user._id,
-        nombre: user.nombre,
-        apellido: user.apellido,
-        email: user.email,
-        role: user.role,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+createAdmin();
