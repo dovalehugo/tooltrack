@@ -7,7 +7,8 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "seed:admin": "node src/seeds/createAdmin.js",
-    "clean:data": "node src/seeds/cleanOldData.js"
+    "clean:data": "node src/seeds/cleanOldData.js",
+    "reset:demo": "node src/seeds/resetDemoLimits.js"
   },
   "keywords": [],
   "author": "",

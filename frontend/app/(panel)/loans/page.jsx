@@ -53,6 +53,7 @@ export default function LoansPage() {
       setTool('');
       fetchData();
     } catch (error) {
+      console.error(error);
       toast.error(error.response?.data?.message || 'Error al crear préstamo');
     }
   };
@@ -63,6 +64,7 @@ export default function LoansPage() {
       fetchData();
       toast.success('Herramienta devuelta');
     } catch (error) {
+      console.error(error);
       toast.error(
         error.response?.data?.message || 'Error al devolver herramienta'
       );

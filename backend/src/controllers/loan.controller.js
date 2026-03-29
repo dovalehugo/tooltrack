@@ -1,6 +1,7 @@
 const Loan = require('../models/Loan');
 const Tool = require('../models/Tool');
 const Employee = require('../models/Employee');
+const User = require('../models/User');
 
 // CREATE
 exports.createLoan = async (req, res) => {
@@ -30,6 +31,12 @@ exports.createLoan = async (req, res) => {
 
     existingTool.cantidadDisponible -= 1;
     await existingTool.save();
+
+    if (req.user?.role === 'demo') {
+      await User.findByIdAndUpdate(req.user.id, {
+        $inc: { 'demoLimits.loanCreates': 1 },
+      });
+    }
 
     const populatedLoan = await Loan.findById(loan._id)
       .populate('employee')
@@ -82,6 +89,12 @@ exports.returnLoan = async (req, res) => {
     loan.fechaDevolucionReal = new Date();
 
     await loan.save();
+
+    if (req.user?.role === 'demo') {
+      await User.findByIdAndUpdate(req.user.id, {
+        $inc: { 'demoLimits.loanReturns': 1 },
+      });
+    }
 
     res.json({ message: 'Herramienta devuelta correctamente' });
   } catch (error) {

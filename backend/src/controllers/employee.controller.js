@@ -1,9 +1,17 @@
 const Employee = require('../models/Employee');
+const User = require('../models/User');
 
 // CREATE
 exports.createEmployee = async (req, res) => {
   try {
     const employee = await Employee.create(req.body);
+
+    if (req.user?.role === 'demo') {
+      await User.findByIdAndUpdate(req.user.id, {
+        $inc: { 'demoLimits.employeeCreates': 1 },
+      });
+    }
+
     res.json(employee);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -51,6 +59,13 @@ exports.updateEmployee = async (req, res) => {
 exports.deleteEmployee = async (req, res) => {
   try {
     await Employee.findByIdAndDelete(req.params.id);
+
+    if (req.user?.role === 'demo') {
+      await User.findByIdAndUpdate(req.user.id, {
+        $inc: { 'demoLimits.employeeDeletes': 1 },
+      });
+    }
+
     res.json({ message: 'Empleado eliminado' });
   } catch (error) {
     res.status(500).json({ message: error.message });

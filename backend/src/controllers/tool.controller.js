@@ -1,5 +1,6 @@
 const Tool = require('../models/Tool');
 const Loan = require('../models/Loan');
+const User = require('../models/User');
 
 // CREATE
 exports.createTool = async (req, res) => {
@@ -13,6 +14,12 @@ exports.createTool = async (req, res) => {
       cantidadTotal: total,
       cantidadDisponible: total,
     });
+
+    if (req.user?.role === 'demo') {
+      await User.findByIdAndUpdate(req.user.id, {
+        $inc: { 'demoLimits.toolCreates': 1 },
+      });
+    }
 
     res.status(201).json(tool);
   } catch (error) {
@@ -86,6 +93,12 @@ exports.deleteTool = async (req, res) => {
 
     if (!deletedTool) {
       return res.status(404).json({ message: 'Herramienta no encontrada' });
+    }
+
+    if (req.user?.role === 'demo') {
+      await User.findByIdAndUpdate(req.user.id, {
+        $inc: { 'demoLimits.toolDeletes': 1 },
+      });
     }
 
     res.json({ message: 'Herramienta eliminada' });

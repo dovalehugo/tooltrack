@@ -10,6 +10,23 @@ export default function EmployeesPage() {
   const [employees, setEmployees] = useState([]);
   const [search, setSearch] = useState('');
   const [isImporting, setIsImporting] = useState(false);
+  const [role, setRole] = useState(null);
+
+  const isDemo = role === 'demo';
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setRole(parsedUser.role || null);
+      } catch (error) {
+        console.error('Error leyendo usuario del storage', error);
+        setRole(null);
+      }
+    }
+  }, []);
 
   const fetchEmployees = async () => {
     try {
@@ -36,6 +53,12 @@ export default function EmployeesPage() {
   }, [employees, search]);
 
   const handleImportCSV = (e) => {
+    if (isDemo) {
+      toast.error('La cuenta demo no puede importar empleados por CSV');
+      e.target.value = '';
+      return;
+    }
+
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -121,50 +144,52 @@ export default function EmployeesPage() {
           </div>
         </div>
 
-        <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 p-4 sm:p-5">
-            <h2 className="text-lg font-semibold text-slate-900">
-              Importar empleados por CSV
-            </h2>
-            <p className="mt-1 text-sm text-slate-500">
-              Sube un archivo CSV con las columnas: nombre, apellido,
-              departamento
-            </p>
-          </div>
+        {!isDemo && (
+          <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="border-b border-slate-200 p-4 sm:p-5">
+              <h2 className="text-lg font-semibold text-slate-900">
+                Importar empleados por CSV
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Sube un archivo CSV con las columnas: nombre, apellido,
+                departamento
+              </p>
+            </div>
 
-          <div className="p-4 sm:p-5">
-            <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5">
-              <div className="flex flex-col gap-4">
-                <label className="inline-flex w-full cursor-pointer items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700 sm:w-auto">
-                  {isImporting ? 'Importando...' : 'Seleccionar archivo CSV'}
-                  <input
-                    type="file"
-                    accept=".csv"
-                    onChange={handleImportCSV}
-                    disabled={isImporting}
-                    className="hidden"
-                  />
-                </label>
+            <div className="p-4 sm:p-5">
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5">
+                <div className="flex flex-col gap-4">
+                  <label className="inline-flex w-full cursor-pointer items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700 sm:w-auto">
+                    {isImporting ? 'Importando...' : 'Seleccionar archivo CSV'}
+                    <input
+                      type="file"
+                      accept=".csv"
+                      onChange={handleImportCSV}
+                      disabled={isImporting}
+                      className="hidden"
+                    />
+                  </label>
 
-                <div className="space-y-2 text-sm text-slate-600">
-                  <p>
-                    Formato esperado:{' '}
-                    <span className="font-semibold text-slate-800">
-                      nombre, apellido, departamento
-                    </span>
-                  </p>
-                  <div className="rounded-xl bg-white p-3 font-mono text-xs text-slate-500 ring-1 ring-slate-200">
-                    nombre,apellido,departamento
-                    <br />
-                    Juan,Pérez,IT
-                    <br />
-                    Ana,García,RRHH
+                  <div className="space-y-2 text-sm text-slate-600">
+                    <p>
+                      Formato esperado:{' '}
+                      <span className="font-semibold text-slate-800">
+                        nombre, apellido, departamento
+                      </span>
+                    </p>
+                    <div className="rounded-xl bg-white p-3 font-mono text-xs text-slate-500 ring-1 ring-slate-200">
+                      nombre,apellido,departamento
+                      <br />
+                      Juan,Pérez,IT
+                      <br />
+                      Ana,García,RRHH
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
       </div>
 
       <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -220,6 +245,10 @@ export default function EmployeesPage() {
                             fetchEmployees();
                           } catch (error) {
                             console.error(error);
+                            toast.error(
+                              error.response?.data?.message ||
+                                'Error al eliminar empleado'
+                            );
                           }
                         }}
                         className="rounded-xl bg-red-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-600"

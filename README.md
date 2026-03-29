@@ -7,6 +7,27 @@ Aplicación full stack para la gestión de herramientas, empleados, préstamos y
 * Aplicación online: [https://tooltrack-delta.vercel.app/](https://tooltrack-delta.vercel.app/)
 * Repositorio: [https://github.com/dovalehugo/tooltrack](https://github.com/dovalehugo/tooltrack)
 
+### Acceso demo
+
+La aplicación incluye una cuenta demo pública para poder probar el sistema con permisos limitados.
+
+**Credenciales demo**
+
+* Correo: `demo@tooltrack.com`
+* Contraseña: `Demo1234*`
+
+### Restricciones de la cuenta demo
+
+La cuenta demo permite explorar la aplicación y probar su funcionamiento real, pero con restricciones para proteger el entorno público:
+
+* acceso permitido a dashboard, empleados, herramientas y préstamos
+* sin acceso al módulo de usuarios
+* sin acceso a configuración
+* sin importación CSV de empleados
+* sin importación CSV de herramientas
+* sin acciones administrativas
+* límite de uso por tipo de acción para evitar abusos en la demo pública
+
 ## Descripción
 
 ToolTrack es una aplicación web desarrollada para digitalizar el control de herramientas en un entorno técnico o industrial.
@@ -35,43 +56,174 @@ ToolTrack nace para resolver ese problema mediante una aplicación web con lógi
 * gestión de usuarios y roles
 * autenticación con JWT
 * importación de datos mediante CSV
+* control de acceso por roles (`admin`, `user`, `demo`)
+* cuenta demo pública con permisos restringidos
 
 ## Stack tecnológico
 
 ### Frontend
 
 * Next.js
+* React
 * Tailwind CSS
+* Axios
+* react-hook-form
+* react-toastify
+* lucide-react
+* papaparse
 
 ### Backend
 
 * Node.js
 * Express
-
-### Base de datos
-
 * MongoDB
 * Mongoose
-
-### Autenticación
-
 * JWT
+* bcryptjs
 
 ### Despliegue
 
 * Vercel
 * Render
+* MongoDB Atlas
 
 ## Estructura del proyecto
 
 ```bash
 tooltrack/
 ├── backend/
+│   ├── src/
+│   │   ├── config/
+│   │   │   └── db.js
+│   │   ├── controllers/
+│   │   │   ├── auth.controller.js
+│   │   │   ├── dashboard.controller.js
+│   │   │   ├── employee.controller.js
+│   │   │   ├── loan.controller.js
+│   │   │   ├── setting.controller.js
+│   │   │   ├── tool.controller.js
+│   │   │   └── user.controller.js
+│   │   ├── middlewares/
+│   │   │   ├── auth.middleware.js
+│   │   │   ├── demoLimit.middleware.js
+│   │   │   └── role.middleware.js
+│   │   ├── models/
+│   │   │   ├── Employee.js
+│   │   │   ├── Loan.js
+│   │   │   ├── Setting.js
+│   │   │   ├── Tool.js
+│   │   │   └── User.js
+│   │   ├── routes/
+│   │   │   ├── auth.routes.js
+│   │   │   ├── dashboard.routes.js
+│   │   │   ├── employee.routes.js
+│   │   │   ├── loan.routes.js
+│   │   │   ├── setting.routes.js
+│   │   │   ├── tool.routes.js
+│   │   │   └── user.routes.js
+│   │   ├── seeds/
+│   │   │   └── createAdmin.js
+│   │   ├── app.js
+│   │   └── server.js
+│   └── package.json
 └── frontend/
+    ├── app/
+    │   ├── login/
+    │   │   └── page.jsx
+    │   └── (panel)/
+    │       ├── dashboard/
+    │       │   └── page.jsx
+    │       ├── employees/
+    │       │   └── page.jsx
+    │       ├── loans/
+    │       │   └── page.jsx
+    │       ├── tools/
+    │       │   └── page.jsx
+    │       ├── users/
+    │       │   └── page.jsx
+    │       └── layout.jsx
+    ├── components/
+    │   ├── EmployeeForm.jsx
+    │   └── Sidebar.jsx
+    ├── services/
+    │   └── api.js
+    └── package.json
 ```
 
-* `backend/`: API REST y lógica de negocio
+### Resumen de estructura
+
+* `backend/`: API REST, modelos, controladores, middlewares y lógica de negocio
 * `frontend/`: interfaz de usuario desarrollada con Next.js
+* `middlewares/demoLimit.middleware.js`: controla el uso máximo permitido para la cuenta demo
+* `models/User.js`: incluye los roles del sistema y los contadores `demoLimits`
+
+## Sistema de roles
+
+ToolTrack utiliza control de acceso por roles para separar permisos dentro de la aplicación.
+
+### `admin`
+
+Puede acceder a toda la plataforma y gestionar:
+
+* usuarios
+* empleados
+* herramientas
+* préstamos
+* configuración
+
+### `user`
+
+Puede utilizar la operativa principal de la aplicación sin acceso a administración de cuentas ni configuración sensible.
+
+### `demo`
+
+Rol diseñado para portfolio y pruebas públicas.
+
+Puede usar la aplicación con restricciones para evitar abuso del entorno y proteger los datos de la demo.
+
+## Funcionalidad del rol demo
+
+La cuenta demo puede:
+
+* ver dashboard
+* ver empleados
+* ver herramientas
+* ver préstamos
+* crear empleados
+* eliminar empleados
+* crear herramientas
+* eliminar herramientas
+* crear préstamos
+* registrar devoluciones
+
+La cuenta demo no puede:
+
+* acceder al módulo de usuarios
+* crear admins
+* cambiar roles
+* acceder a settings
+* importar empleados por CSV
+* importar herramientas por CSV
+* realizar acciones administrativas
+
+## Límites de uso de la demo
+
+El sistema demo utiliza contadores por usuario para limitar acciones concretas.
+
+Los límites se guardan en el modelo `User` dentro del objeto:
+
+```js
+demoLimits: {
+  employeeCreates,
+  employeeDeletes,
+  toolCreates,
+  toolDeletes,
+  loanCreates,
+  loanReturns
+}
+```
+
+Estos contadores permiten controlar el uso del entorno público sin bloquear la navegación ni la visualización de la aplicación.
 
 ## Instalación en local
 
@@ -152,6 +304,7 @@ Este proyecto me permite mostrar conocimientos y práctica en:
 * lógica de negocio aplicada a un caso real
 * despliegue de frontend y backend por separado
 * organización de un proyecto web completo
+* implementación de una cuenta demo pública restringida para portfolio
 
 ## Próximas mejoras
 
@@ -161,6 +314,7 @@ Este proyecto me permite mostrar conocimientos y práctica en:
 * reforzar validaciones del backend
 * mejorar manejo de errores
 * añadir más capturas y documentación visual
+* automatizar el reseteo de límites de la cuenta demo
 
 ## Autor
 

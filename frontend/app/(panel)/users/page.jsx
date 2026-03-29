@@ -6,7 +6,6 @@ import {
   Shield,
   UserCog,
   Users,
-  Mail,
   Trash2,
   BadgeCheck,
 } from 'lucide-react';
@@ -158,6 +157,10 @@ export default function UsersPage() {
       return 'bg-blue-100 text-blue-700';
     }
 
+    if (userRole === 'demo') {
+      return 'bg-amber-100 text-amber-700';
+    }
+
     return 'bg-slate-100 text-slate-700';
   };
 
@@ -260,6 +263,7 @@ export default function UsersPage() {
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
                 >
                   <option value="user">Usuario</option>
+                  <option value="demo">Demo</option>
                   <option value="admin">Admin</option>
                 </select>
               </div>
@@ -316,6 +320,17 @@ export default function UsersPage() {
               <p className="mt-2 text-sm leading-6 text-slate-600">
                 Utiliza la plataforma en el día a día, pero sin acceso a la
                 administración de cuentas.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+              <div className="flex items-center gap-2">
+                <Shield size={16} className="text-amber-700" />
+                <h3 className="text-sm font-semibold text-amber-900">Demo</h3>
+              </div>
+              <p className="mt-2 text-sm leading-6 text-amber-800">
+                Puede probar la aplicación con acceso limitado y sin permisos de
+                administración.
               </p>
             </div>
           </div>

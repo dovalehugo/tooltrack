@@ -184,10 +184,19 @@ export default function LoginPage() {
                 </button>
               </form>
 
-              <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-xs leading-6 text-slate-500">
-                  Consejo: más adelante aquí podremos añadir acceso multiusuario,
-                  recuperación de contraseña y gestión de permisos por rol.
+              <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                <h3 className="text-sm font-semibold text-amber-900">
+                  Demo disponible
+                </h3>
+                <p className="mt-2 text-sm text-amber-800">
+                  Correo: demo@tooltrack.com
+                </p>
+                <p className="mt-1 text-sm text-amber-800">
+                  Contraseña: Demo1234*
+                </p>
+                <p className="mt-3 text-xs leading-6 text-amber-700">
+                  Esta cuenta permite probar la aplicación con permisos
+                  limitados.
                 </p>
               </div>
             </div>

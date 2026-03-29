@@ -25,8 +25,16 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['admin', 'user'],
+      enum: ['admin', 'user', 'demo'],
       default: 'user',
+    },
+    demoLimits: {
+      employeeCreates: { type: Number, default: 0 },
+      employeeDeletes: { type: Number, default: 0 },
+      toolCreates: { type: Number, default: 0 },
+      toolDeletes: { type: Number, default: 0 },
+      loanCreates: { type: Number, default: 0 },
+      loanReturns: { type: Number, default: 0 },
     },
   },
   {

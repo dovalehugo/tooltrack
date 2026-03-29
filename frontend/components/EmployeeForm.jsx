@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import api from '@/services/api';
 import { toast } from 'react-toastify';
@@ -7,20 +8,40 @@ import { UserPlus } from 'lucide-react';
 
 export default function EmployeeForm({ onCreated }) {
   const { register, handleSubmit, reset } = useForm();
+  const [role, setRole] = useState(null);
+  const [isCreating, setIsCreating] = useState(false);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setRole(parsedUser.role || null);
+      } catch (error) {
+        console.error('Error leyendo usuario del storage', error);
+        setRole(null);
+      }
+    }
+  }, []);
 
   const onSubmit = async (data) => {
     try {
+      setIsCreating(true);
       await api.post('/employees', data);
       toast.success('Empleado creado');
       reset();
       onCreated();
     } catch (error) {
-      toast.error('Error al crear empleado');
+      console.error(error);
+      toast.error(error.response?.data?.message || 'Error al crear empleado');
+    } finally {
+      setIsCreating(false);
     }
   };
 
   return (
-   <div className="mb-8 w-full max-w-3xl rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+    <div className="mb-8 w-full max-w-3xl rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
       <div className="mb-6 flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
           <UserPlus size={20} />
@@ -33,6 +54,11 @@ export default function EmployeeForm({ onCreated }) {
           <p className="text-sm text-slate-500">
             Añade un empleado al sistema de ToolTrack
           </p>
+          {role === 'demo' && (
+            <p className="mt-2 text-xs text-amber-600">
+              La cuenta demo tiene un límite de creación de empleados.
+            </p>
+          )}
         </div>
       </div>
 
@@ -75,9 +101,10 @@ export default function EmployeeForm({ onCreated }) {
         <div className="flex justify-end">
           <button
             type="submit"
-            className="inline-flex items-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200"
+            disabled={isCreating}
+            className="inline-flex items-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            Crear empleado
+            {isCreating ? 'Creando...' : 'Crear empleado'}
           </button>
         </div>
       </form>

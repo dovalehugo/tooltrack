@@ -22,6 +22,14 @@ exports.createUser = async (req, res) => {
       });
     }
 
+    const allowedRoles = ['admin', 'user', 'demo'];
+
+    if (role && !allowedRoles.includes(role)) {
+      return res.status(400).json({
+        message: 'Rol no válido',
+      });
+    }
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'El usuario ya existe' });
