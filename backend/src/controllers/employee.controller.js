@@ -1,5 +1,6 @@
 const Employee = require('../models/Employee');
 const User = require('../models/User');
+const Loan = require('../models/Loan');
 
 // CREATE
 exports.createEmployee = async (req, res) => {
@@ -58,6 +59,22 @@ exports.updateEmployee = async (req, res) => {
 // DELETE
 exports.deleteEmployee = async (req, res) => {
   try {
+    console.log('DELETE employee id:', req.params.id);
+
+    const activeLoan = await Loan.findOne({
+      employee: req.params.id,
+      estado: 'activo',
+    });
+
+    console.log('ACTIVE LOAN:', activeLoan);
+
+    if (activeLoan) {
+      return res.status(400).json({
+        message:
+          'No se puede eliminar el empleado porque tiene préstamos activos',
+      });
+    }
+
     await Employee.findByIdAndDelete(req.params.id);
 
     if (req.user?.role === 'demo') {
@@ -68,6 +85,7 @@ exports.deleteEmployee = async (req, res) => {
 
     res.json({ message: 'Empleado eliminado' });
   } catch (error) {
+    console.error('DELETE EMPLOYEE ERROR:', error);
     res.status(500).json({ message: error.message });
   }
 };

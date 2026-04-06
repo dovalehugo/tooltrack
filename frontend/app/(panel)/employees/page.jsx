@@ -240,14 +240,20 @@ export default function EmployeesPage() {
                     <div className="text-right">
                       <button
                         onClick={async () => {
+                          const confirmed = window.confirm(
+                            `¿Seguro que quieres eliminar a ${emp.nombre} ${emp.apellido}?`
+                          );
+
+                          if (!confirmed) return;
+
                           try {
                             await api.delete(`/employees/${emp._id}`);
+                            toast.success('Empleado eliminado correctamente');
                             fetchEmployees();
                           } catch (error) {
                             console.error(error);
                             toast.error(
-                              error.response?.data?.message ||
-                                'Error al eliminar empleado'
+                              error.response?.data?.message || 'Error al eliminar empleado'
                             );
                           }
                         }}

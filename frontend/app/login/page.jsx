@@ -198,6 +198,9 @@ export default function LoginPage() {
                   Esta cuenta permite probar la aplicación con permisos
                   limitados.
                 </p>
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                  <strong>Importante:</strong> La primera carga puede tardar unos segundos. El backend está alojado en un servicio gratuito y puede entrar en reposo tras un tiempo de inactividad.
+                </div>
               </div>
             </div>
           </div>

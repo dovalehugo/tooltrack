@@ -350,15 +350,20 @@ export default function ToolsPage() {
                       <div className="text-right">
                         <button
                           onClick={async () => {
+                            const confirmed = window.confirm(
+                              `¿Seguro que quieres eliminar la herramienta "${tool.nombre}"?`
+                            );
+
+                            if (!confirmed) return;
+
                             try {
                               await api.delete(`/tools/${tool._id}`);
                               fetchTools();
-                              toast.success('Herramienta eliminada');
+                              toast.success('Herramienta eliminada correctamente');
                             } catch (error) {
                               console.error(error);
                               toast.error(
-                                error.response?.data?.message ||
-                                'Error al eliminar herramienta'
+                                error.response?.data?.message || 'Error al eliminar herramienta'
                               );
                             }
                           }}

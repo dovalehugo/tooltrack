@@ -85,7 +85,8 @@ exports.deleteTool = async (req, res) => {
 
     if (activeLoan) {
       return res.status(400).json({
-        message: 'No se puede eliminar una herramienta con préstamos activos',
+        message:
+          'No se puede eliminar la herramienta porque tiene préstamos activos',
       });
     }
 
