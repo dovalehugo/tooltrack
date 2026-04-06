@@ -9,12 +9,12 @@ exports.getDashboardStats = async (req, res) => {
       Tool.find(),
       Loan.find()
         .populate('employee')
-        .populate('tool')
+        .populate('tools')
         .sort({ createdAt: -1 })
         .limit(8),
       Loan.find({ estado: 'activo' })
         .populate('employee')
-        .populate('tool')
+        .populate('tools')
         .sort({ fechaPrestamo: -1 })
         .limit(10),
     ]);

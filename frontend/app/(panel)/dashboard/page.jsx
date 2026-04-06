@@ -52,6 +52,14 @@ export default function DashboardPage() {
     return new Date(date).toLocaleString();
   };
 
+  const getToolsLabel = (loan) => {
+    if (!Array.isArray(loan?.tools) || loan.tools.length === 0) {
+      return 'Sin herramientas';
+    }
+
+    return loan.tools.map((tool) => tool?.nombre).filter(Boolean).join(', ');
+  };
+
   const kpis = data?.kpis || {
     totalEmployees: 0,
     totalTools: 0,
@@ -175,7 +183,7 @@ export default function DashboardPage() {
               <div className="p-5">
                 <div className="space-y-3">
                   {data?.outOfStockTools?.length === 0 &&
-                    data?.lowStockTools?.length === 0 ? (
+                  data?.lowStockTools?.length === 0 ? (
                     <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
                       No hay alertas de inventario ahora mismo.
                     </div>
@@ -245,16 +253,17 @@ export default function DashboardPage() {
                             {loan.employee?.nombre} {loan.employee?.apellido}
                           </p>
                           <p className="text-sm text-slate-600">
-                            {loan.tool?.nombre}
+                            {getToolsLabel(loan)}
                           </p>
                         </div>
 
                         <div className="text-right">
                           <span
-                            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${loan.estado === 'activo'
+                            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                              loan.estado === 'activo'
                                 ? 'bg-amber-100 text-amber-700'
                                 : 'bg-emerald-100 text-emerald-700'
-                              }`}
+                            }`}
                           >
                             {loan.estado}
                           </span>
@@ -291,7 +300,7 @@ export default function DashboardPage() {
               <div className="min-w-[900px]">
                 <div className="grid grid-cols-4 border-b border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-600">
                   <div>Empleado</div>
-                  <div>Herramienta</div>
+                  <div>Herramientas</div>
                   <div>Fecha préstamo</div>
                   <div>Estado</div>
                 </div>
@@ -306,7 +315,9 @@ export default function DashboardPage() {
                         <div className="font-medium text-slate-900">
                           {loan.employee?.nombre} {loan.employee?.apellido}
                         </div>
-                        <div className="text-slate-700">{loan.tool?.nombre}</div>
+                        <div className="text-slate-700">
+                          {getToolsLabel(loan)}
+                        </div>
                         <div className="text-slate-600">
                           {formatDate(loan.fechaPrestamo)}
                         </div>

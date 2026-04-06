@@ -7,11 +7,13 @@ const loanSchema = new mongoose.Schema(
       ref: 'Employee',
       required: true,
     },
-    tool: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Tool',
-      required: true,
-    },
+    tools: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Tool',
+        required: true,
+      },
+    ],
     fechaPrestamo: {
       type: Date,
       default: Date.now,

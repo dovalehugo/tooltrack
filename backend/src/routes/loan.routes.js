@@ -15,6 +15,20 @@ router.post(
 
 router.get('/', role('admin', 'user', 'demo'), controller.getLoans);
 
+router.post(
+  '/:id/tools',
+  role('admin', 'user', 'demo'),
+  demoLimit('loanCreates', 20),
+  controller.addToolToLoan
+);
+
+router.delete(
+  '/:id/tools/:toolId',
+  role('admin', 'user', 'demo'),
+  demoLimit('loanReturns', 20),
+  controller.removeToolFromLoan
+);
+
 router.delete(
   '/:id',
   role('admin', 'user', 'demo'),
