@@ -168,12 +168,12 @@ export default function UsersPage() {
 
   return (
     <div className="mx-auto max-w-6xl">
-      <section className="mb-8 rounded-3xl border border-slate-200 bg-gradient-to-r from-white to-slate-50 p-6 shadow-sm sm:p-8">
-        <div className="mb-4 h-1.5 w-24 rounded-full bg-blue-600" />
-        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+      <section className="mb-6 rounded-3xl border border-slate-200 bg-gradient-to-r from-white to-slate-50 p-4 shadow-sm sm:mb-8 sm:p-6 lg:p-8">
+        <div className="mb-4 h-1.5 w-20 rounded-full bg-blue-600 sm:w-24" />
+        <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
           Usuarios
         </h1>
-        <p className="mt-3 max-w-2xl text-sm text-slate-600 sm:text-base">
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
           Administra las cuentas de acceso a ToolTrack, asigna roles y controla
           qué usuarios pueden operar dentro de la plataforma.
         </p>
@@ -181,7 +181,7 @@ export default function UsersPage() {
 
       <div className="mb-6 grid gap-6 lg:grid-cols-2 lg:items-start">
         <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-5 py-4">
+          <div className="border-b border-slate-200 px-4 py-4 sm:px-5">
             <div className="flex items-center gap-3">
               <div className="rounded-2xl bg-blue-50 p-3 text-blue-600">
                 <UserCog size={20} />
@@ -197,7 +197,7 @@ export default function UsersPage() {
             </div>
           </div>
 
-          <div className="p-5">
+          <div className="p-4 sm:p-5">
             <form onSubmit={createUser} className="grid gap-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
@@ -282,7 +282,7 @@ export default function UsersPage() {
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-5 py-4">
+          <div className="border-b border-slate-200 px-4 py-4 sm:px-5">
             <div className="flex items-center gap-3">
               <div className="rounded-2xl bg-slate-100 p-3 text-slate-700">
                 <Shield size={20} />
@@ -298,7 +298,7 @@ export default function UsersPage() {
             </div>
           </div>
 
-          <div className="grid gap-4 p-5">
+          <div className="grid gap-4 p-4 sm:p-5">
             <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4">
               <div className="flex items-center gap-2">
                 <BadgeCheck size={16} className="text-blue-700" />
@@ -361,59 +361,119 @@ export default function UsersPage() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <div className="min-w-[950px]">
-            <div className="grid grid-cols-5 border-b border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-600">
-              <div>Nombre</div>
-              <div>Apellido</div>
-              <div>Correo</div>
-              <div>Rol</div>
-              <div className="text-right">Acciones</div>
-            </div>
+        <div className="p-4 sm:p-5">
+          {filteredUsers.length > 0 ? (
+            <>
+              <div className="hidden overflow-x-auto md:block">
+                <div className="min-w-[950px]">
+                  <div className="grid grid-cols-5 border-b border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-600">
+                    <div>Nombre</div>
+                    <div>Apellido</div>
+                    <div>Correo</div>
+                    <div>Rol</div>
+                    <div className="text-right">Acciones</div>
+                  </div>
 
-            <div className="max-h-[720px] overflow-y-auto">
-              {filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => (
+                  <div className="max-h-[720px] overflow-y-auto">
+                    {filteredUsers.map((user) => (
+                      <div
+                        key={user._id}
+                        className="grid grid-cols-5 items-center border-b border-slate-100 px-4 py-3 text-sm hover:bg-slate-50"
+                      >
+                        <div className="font-medium text-slate-900">
+                          {user.nombre || '-'}
+                        </div>
+
+                        <div className="text-slate-700">
+                          {user.apellido || '-'}
+                        </div>
+
+                        <div className="text-slate-700">{user.email}</div>
+
+                        <div>
+                          <span
+                            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getRoleClasses(
+                              user.role
+                            )}`}
+                          >
+                            {user.role}
+                          </span>
+                        </div>
+
+                        <div className="text-right">
+                          <button
+                            onClick={() => deleteUser(user._id)}
+                            className="inline-flex items-center gap-2 rounded-xl bg-red-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-600"
+                          >
+                            <Trash2 size={15} />
+                            Eliminar
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3 md:hidden">
+                {filteredUsers.map((user) => (
                   <div
                     key={user._id}
-                    className="grid grid-cols-5 items-center border-b border-slate-100 px-4 py-3 text-sm hover:bg-slate-50"
+                    className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
                   >
-                    <div className="font-medium text-slate-900">
-                      {user.nombre || '-'}
-                    </div>
+                    <div className="flex flex-col gap-4">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          Nombre completo
+                        </p>
+                        <p className="mt-1 font-medium text-slate-900">
+                          {user.nombre || '-'} {user.apellido || '-'}
+                        </p>
+                      </div>
 
-                    <div className="text-slate-700">
-                      {user.apellido || '-'}
-                    </div>
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          Correo
+                        </p>
+                        <p className="mt-1 break-all text-sm text-slate-700">
+                          {user.email}
+                        </p>
+                      </div>
 
-                    <div className="text-slate-700">{user.email}</div>
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          Rol
+                        </p>
+                        <div className="mt-2">
+                          <span
+                            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getRoleClasses(
+                              user.role
+                            )}`}
+                          >
+                            {user.role}
+                          </span>
+                        </div>
+                      </div>
 
-                    <div>
-                      <span
-                        className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getRoleClasses(user.role)}`}
-                      >
-                        {user.role}
-                      </span>
-                    </div>
-
-                    <div className="text-right">
-                      <button
-                        onClick={() => deleteUser(user._id)}
-                        className="inline-flex items-center gap-2 rounded-xl bg-red-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-600"
-                      >
-                        <Trash2 size={15} />
-                        Eliminar
-                      </button>
+                      <div className="pt-1">
+                        <button
+                          onClick={() => deleteUser(user._id)}
+                          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 px-3 py-2.5 text-sm font-medium text-white transition hover:bg-red-600"
+                        >
+                          <Trash2 size={15} />
+                          Eliminar
+                        </button>
+                      </div>
                     </div>
                   </div>
-                ))
-              ) : (
-                <div className="px-4 py-8 text-center text-sm text-slate-500">
-                  No hay usuarios que coincidan con la búsqueda.
-                </div>
-              )}
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
+              No hay usuarios que coincidan con la búsqueda.
             </div>
-          </div>
+          )}
         </div>
       </section>
     </div>

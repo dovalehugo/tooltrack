@@ -115,14 +115,33 @@ export default function EmployeesPage() {
     });
   };
 
+  const handleDeleteEmployee = async (emp) => {
+    const confirmed = window.confirm(
+      `¿Seguro que quieres eliminar a ${emp.nombre} ${emp.apellido}?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await api.delete(`/employees/${emp._id}`);
+      toast.success('Empleado eliminado correctamente');
+      fetchEmployees();
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error.response?.data?.message || 'Error al eliminar empleado'
+      );
+    }
+  };
+
   return (
     <div className="mx-auto max-w-6xl">
-      <section className="mb-8 rounded-3xl border border-slate-200 bg-gradient-to-r from-white to-slate-50 p-6 shadow-sm sm:p-8">
-        <div className="mb-4 h-1.5 w-24 rounded-full bg-blue-600" />
-        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+      <section className="mb-6 rounded-3xl border border-slate-200 bg-gradient-to-r from-white to-slate-50 p-4 shadow-sm sm:mb-8 sm:p-6 lg:p-8">
+        <div className="mb-4 h-1.5 w-20 rounded-full bg-blue-600 sm:w-24" />
+        <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
           Empleados
         </h1>
-        <p className="mt-3 max-w-2xl text-sm text-slate-600 sm:text-base">
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
           Gestiona tu plantilla, añade nuevos empleados y realiza importaciones
           masivas mediante archivos CSV.
         </p>
@@ -130,7 +149,7 @@ export default function EmployeesPage() {
 
       <div className="mb-6 grid gap-6 lg:grid-cols-2 lg:items-start">
         <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-5 py-4">
+          <div className="border-b border-slate-200 px-4 py-4 sm:px-5">
             <h2 className="text-lg font-semibold text-slate-900">
               Nuevo empleado
             </h2>
@@ -139,7 +158,7 @@ export default function EmployeesPage() {
             </p>
           </div>
 
-          <div className="p-5">
+          <div className="p-4 sm:p-5">
             <EmployeeForm onCreated={fetchEmployees} />
           </div>
         </div>
@@ -157,7 +176,7 @@ export default function EmployeesPage() {
             </div>
 
             <div className="p-4 sm:p-5">
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5">
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 sm:p-5">
                 <div className="flex flex-col gap-4">
                   <label className="inline-flex w-full cursor-pointer items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700 sm:w-auto">
                     {isImporting ? 'Importando...' : 'Seleccionar archivo CSV'}
@@ -177,12 +196,14 @@ export default function EmployeesPage() {
                         nombre, apellido, departamento
                       </span>
                     </p>
-                    <div className="rounded-xl bg-white p-3 font-mono text-xs text-slate-500 ring-1 ring-slate-200">
-                      nombre,apellido,departamento
-                      <br />
-                      Juan,Pérez,IT
-                      <br />
-                      Ana,García,RRHH
+                    <div className="overflow-x-auto rounded-xl bg-white p-3 font-mono text-xs text-slate-500 ring-1 ring-slate-200">
+                      <div className="min-w-[260px]">
+                        nombre,apellido,departamento
+                        <br />
+                        Juan,Pérez,IT
+                        <br />
+                        Ana,García,RRHH
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -216,61 +237,86 @@ export default function EmployeesPage() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <div className="min-w-[700px]">
-            <div className="grid grid-cols-4 border-b border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-600">
-              <div>Nombre</div>
-              <div>Apellido</div>
-              <div>Departamento</div>
-              <div className="text-right">Acciones</div>
-            </div>
+        <div className="p-4 sm:p-5">
+          {filteredEmployees.length > 0 ? (
+            <>
+              <div className="hidden overflow-x-auto md:block">
+                <div className="min-w-[700px]">
+                  <div className="grid grid-cols-4 border-b border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-600">
+                    <div>Nombre</div>
+                    <div>Apellido</div>
+                    <div>Departamento</div>
+                    <div className="text-right">Acciones</div>
+                  </div>
 
-            <div className="max-h-[900px] overflow-y-auto">
-              {filteredEmployees.length > 0 ? (
-                filteredEmployees.map((emp) => (
+                  <div className="max-h-[900px] overflow-y-auto">
+                    {filteredEmployees.map((emp) => (
+                      <div
+                        key={emp._id}
+                        className="grid grid-cols-4 items-center border-b border-slate-100 px-4 py-3 text-sm hover:bg-slate-50"
+                      >
+                        <div className="font-medium text-slate-900">
+                          {emp.nombre}
+                        </div>
+                        <div className="text-slate-700">{emp.apellido}</div>
+                        <div className="text-slate-600">{emp.departamento}</div>
+                        <div className="text-right">
+                          <button
+                            onClick={() => handleDeleteEmployee(emp)}
+                            className="rounded-xl bg-red-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-600"
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3 md:hidden">
+                {filteredEmployees.map((emp) => (
                   <div
                     key={emp._id}
-                    className="grid grid-cols-4 items-center border-b border-slate-100 px-4 py-3 text-sm hover:bg-slate-50"
+                    className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
                   >
-                    <div className="font-medium text-slate-900">
-                      {emp.nombre}
-                    </div>
-                    <div className="text-slate-700">{emp.apellido}</div>
-                    <div className="text-slate-600">{emp.departamento}</div>
-                    <div className="text-right">
-                      <button
-                        onClick={async () => {
-                          const confirmed = window.confirm(
-                            `¿Seguro que quieres eliminar a ${emp.nombre} ${emp.apellido}?`
-                          );
+                    <div className="flex flex-col gap-4">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          Nombre completo
+                        </p>
+                        <p className="mt-1 font-medium text-slate-900">
+                          {emp.nombre} {emp.apellido}
+                        </p>
+                      </div>
 
-                          if (!confirmed) return;
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          Departamento
+                        </p>
+                        <p className="mt-1 text-sm text-slate-700">
+                          {emp.departamento}
+                        </p>
+                      </div>
 
-                          try {
-                            await api.delete(`/employees/${emp._id}`);
-                            toast.success('Empleado eliminado correctamente');
-                            fetchEmployees();
-                          } catch (error) {
-                            console.error(error);
-                            toast.error(
-                              error.response?.data?.message || 'Error al eliminar empleado'
-                            );
-                          }
-                        }}
-                        className="rounded-xl bg-red-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-600"
-                      >
-                        Eliminar
-                      </button>
+                      <div className="pt-1">
+                        <button
+                          onClick={() => handleDeleteEmployee(emp)}
+                          className="w-full rounded-xl bg-red-500 px-3 py-2.5 text-sm font-medium text-white transition hover:bg-red-600"
+                        >
+                          Eliminar
+                        </button>
+                      </div>
                     </div>
                   </div>
-                ))
-              ) : (
-                <div className="px-4 py-8 text-center text-sm text-slate-500">
-                  No hay empleados que coincidan con la búsqueda.
-                </div>
-              )}
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
+              No hay empleados que coincidan con la búsqueda.
             </div>
-          </div>
+          )}
         </div>
       </section>
     </div>
