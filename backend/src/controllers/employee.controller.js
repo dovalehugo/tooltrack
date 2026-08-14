@@ -5,7 +5,19 @@ const Loan = require('../models/Loan');
 // CREATE
 exports.createEmployee = async (req, res) => {
   try {
-    const employee = await Employee.create(req.body);
+    const { nombre, apellido, departamento } = req.body;
+
+    if (!nombre?.trim() || !apellido?.trim() || !departamento?.trim()) {
+      return res.status(400).json({
+        message: 'Nombre, apellido y departamento son obligatorios',
+      });
+    }
+
+    const employee = await Employee.create({
+      nombre: nombre.trim(),
+      apellido: apellido.trim(),
+      departamento: departamento.trim(),
+    });
 
     if (req.user?.role === 'demo') {
       await User.findByIdAndUpdate(req.user.id, {
@@ -13,7 +25,7 @@ exports.createEmployee = async (req, res) => {
       });
     }
 
-    res.json(employee);
+    res.status(201).json(employee);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -27,7 +39,12 @@ exports.getEmployees = async (req, res) => {
     let filter = {};
 
     if (search) {
-      filter.nombre = { $regex: search, $options: 'i' };
+      const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      filter.$or = [
+        { nombre: { $regex: escapedSearch, $options: 'i' } },
+        { apellido: { $regex: escapedSearch, $options: 'i' } },
+        { departamento: { $regex: escapedSearch, $options: 'i' } },
+      ];
     }
 
     if (department) {
@@ -47,8 +64,12 @@ exports.updateEmployee = async (req, res) => {
     const employee = await Employee.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true }
+      { new: true, runValidators: true }
     );
+
+    if (!employee) {
+      return res.status(404).json({ message: 'Empleado no encontrado' });
+    }
 
     res.json(employee);
   } catch (error) {
@@ -59,14 +80,16 @@ exports.updateEmployee = async (req, res) => {
 // DELETE
 exports.deleteEmployee = async (req, res) => {
   try {
-    console.log('DELETE employee id:', req.params.id);
+    const existingEmployee = await Employee.findById(req.params.id);
+
+    if (!existingEmployee) {
+      return res.status(404).json({ message: 'Empleado no encontrado' });
+    }
 
     const activeLoan = await Loan.findOne({
       employee: req.params.id,
       estado: 'activo',
     });
-
-    console.log('ACTIVE LOAN:', activeLoan);
 
     if (activeLoan) {
       return res.status(400).json({
@@ -85,7 +108,6 @@ exports.deleteEmployee = async (req, res) => {
 
     res.json({ message: 'Empleado eliminado' });
   } catch (error) {
-    console.error('DELETE EMPLOYEE ERROR:', error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -98,6 +120,12 @@ exports.importEmployees = async (req, res) => {
     if (!Array.isArray(employees) || employees.length === 0) {
       return res.status(400).json({
         message: 'Debes enviar un array de empleados',
+      });
+    }
+
+    if (employees.length > 500) {
+      return res.status(400).json({
+        message: 'Máximo 500 empleados por importación',
       });
     }
 

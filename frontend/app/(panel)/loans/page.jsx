@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import api from '@/services/api';
 import { toast } from 'react-toastify';
+import { formatDate } from '@/lib/formatDate';
 
 export default function LoansPage() {
   const [loans, setLoans] = useState([]);
@@ -263,11 +264,6 @@ export default function LoansPage() {
     }
 
     return 'bg-amber-100 text-amber-700';
-  };
-
-  const formatDate = (date) => {
-    if (!date) return '-';
-    return new Date(date).toLocaleString();
   };
 
   const getToolsText = (loan) => {

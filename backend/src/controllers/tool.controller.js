@@ -7,10 +7,22 @@ exports.createTool = async (req, res) => {
   try {
     const { nombre, cantidadTotal } = req.body;
 
+    if (!nombre?.toString().trim()) {
+      return res.status(400).json({
+        message: 'El nombre de la herramienta es obligatorio',
+      });
+    }
+
     const total = Number(cantidadTotal) || 1;
 
+    if (total < 1) {
+      return res.status(400).json({
+        message: 'La cantidad total debe ser al menos 1',
+      });
+    }
+
     const tool = await Tool.create({
-      nombre,
+      nombre: nombre.toString().trim(),
       cantidadTotal: total,
       cantidadDisponible: total,
     });
@@ -48,13 +60,25 @@ exports.updateTool = async (req, res) => {
       return res.status(404).json({ message: 'Herramienta no encontrada' });
     }
 
+    if (nombre !== undefined && !nombre.toString().trim()) {
+      return res.status(400).json({
+        message: 'El nombre de la herramienta es obligatorio',
+      });
+    }
+
     const activeLoansCount = await Loan.countDocuments({
-      tool: tool._id,
+      tools: tool._id,
       estado: 'activo',
     });
 
     const newTotal =
       cantidadTotal !== undefined ? Number(cantidadTotal) : tool.cantidadTotal;
+
+    if (!Number.isFinite(newTotal) || newTotal < 1) {
+      return res.status(400).json({
+        message: 'La cantidad total debe ser al menos 1',
+      });
+    }
 
     if (newTotal < activeLoansCount) {
       return res.status(400).json({
@@ -63,7 +87,7 @@ exports.updateTool = async (req, res) => {
       });
     }
 
-    tool.nombre = nombre ?? tool.nombre;
+    tool.nombre = nombre !== undefined ? nombre.toString().trim() : tool.nombre;
     tool.cantidadTotal = newTotal;
     tool.cantidadDisponible = newTotal - activeLoansCount;
 
@@ -79,7 +103,7 @@ exports.updateTool = async (req, res) => {
 exports.deleteTool = async (req, res) => {
   try {
     const activeLoan = await Loan.findOne({
-      tool: req.params.id,
+      tools: req.params.id,
       estado: 'activo',
     });
 
@@ -116,6 +140,12 @@ exports.importTools = async (req, res) => {
     if (!Array.isArray(tools) || tools.length === 0) {
       return res.status(400).json({
         message: 'Debes enviar un array de herramientas',
+      });
+    }
+
+    if (tools.length > 500) {
+      return res.status(400).json({
+        message: 'Máximo 500 herramientas por importación',
       });
     }
 

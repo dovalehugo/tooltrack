@@ -2,6 +2,10 @@ const Loan = require('../models/Loan');
 const Tool = require('../models/Tool');
 const Employee = require('../models/Employee');
 const User = require('../models/User');
+const {
+  decrementToolsStock,
+  incrementToolsStock,
+} = require('../utils/stock');
 
 const getTodayRange = () => {
   const start = new Date();
@@ -28,7 +32,7 @@ exports.createLoan = async (req, res) => {
         .json({ message: 'Debes añadir al menos una herramienta al préstamo' });
     }
 
-    const uniqueToolIds = [...new Set(tools)];
+    const uniqueToolIds = [...new Set(tools.map((toolId) => String(toolId)))];
 
     const existingEmployee = await Employee.findById(employee);
     if (!existingEmployee) {
@@ -78,19 +82,22 @@ exports.createLoan = async (req, res) => {
         });
       }
 
-      loan.tools.push(...newToolIds);
-      await loan.save();
+      const stockUpdated = await decrementToolsStock(newToolIds);
 
-      const toolsToDiscount = existingTools.filter((tool) =>
-        newToolIds.includes(tool._id.toString())
-      );
+      if (!stockUpdated) {
+        return res.status(409).json({
+          message:
+            'No hay stock suficiente para completar el préstamo. Inténtalo de nuevo.',
+        });
+      }
 
-      await Promise.all(
-        toolsToDiscount.map(async (tool) => {
-          tool.cantidadDisponible -= 1;
-          await tool.save();
-        })
-      );
+      try {
+        loan.tools.push(...newToolIds);
+        await loan.save();
+      } catch (error) {
+        await incrementToolsStock(newToolIds);
+        throw error;
+      }
 
       const populatedLoan = await Loan.findById(loan._id)
         .populate('employee')
@@ -102,17 +109,24 @@ exports.createLoan = async (req, res) => {
       });
     }
 
-    loan = await Loan.create({
-      employee,
-      tools: uniqueToolIds,
-    });
+    const stockUpdated = await decrementToolsStock(uniqueToolIds);
 
-    await Promise.all(
-      existingTools.map(async (tool) => {
-        tool.cantidadDisponible -= 1;
-        await tool.save();
-      })
-    );
+    if (!stockUpdated) {
+      return res.status(409).json({
+        message:
+          'No hay stock suficiente para completar el préstamo. Inténtalo de nuevo.',
+      });
+    }
+
+    try {
+      loan = await Loan.create({
+        employee,
+        tools: uniqueToolIds,
+      });
+    } catch (error) {
+      await incrementToolsStock(uniqueToolIds);
+      throw error;
+    }
 
     if (req.user?.role === 'demo') {
       await User.findByIdAndUpdate(req.user.id, {
@@ -192,11 +206,21 @@ exports.addToolToLoan = async (req, res) => {
       });
     }
 
-    loan.tools.push(toolId);
-    await loan.save();
+    const stockUpdated = await decrementToolsStock([toolId]);
 
-    tool.cantidadDisponible -= 1;
-    await tool.save();
+    if (!stockUpdated) {
+      return res.status(409).json({
+        message: 'No hay unidades disponibles de esta herramienta',
+      });
+    }
+
+    try {
+      loan.tools.push(toolId);
+      await loan.save();
+    } catch (error) {
+      await incrementToolsStock([toolId]);
+      throw error;
+    }
 
     const populatedLoan = await Loan.findById(loan._id)
       .populate('employee')
@@ -242,16 +266,7 @@ exports.removeToolFromLoan = async (req, res) => {
       (currentToolId) => currentToolId.toString() !== toolId
     );
 
-    const tool = await Tool.findById(toolId);
-    if (tool) {
-      tool.cantidadDisponible += 1;
-
-      if (tool.cantidadDisponible > tool.cantidadTotal) {
-        tool.cantidadDisponible = tool.cantidadTotal;
-      }
-
-      await tool.save();
-    }
+    await incrementToolsStock([toolId]);
 
     if (loan.tools.length === 0) {
       loan.estado = 'devuelto';
@@ -289,19 +304,7 @@ exports.returnLoan = async (req, res) => {
       return res.status(400).json({ message: 'El préstamo ya está devuelto' });
     }
 
-    const tools = await Tool.find({ _id: { $in: loan.tools } });
-
-    await Promise.all(
-      tools.map(async (tool) => {
-        tool.cantidadDisponible += 1;
-
-        if (tool.cantidadDisponible > tool.cantidadTotal) {
-          tool.cantidadDisponible = tool.cantidadTotal;
-        }
-
-        await tool.save();
-      })
-    );
+    await incrementToolsStock(loan.tools);
 
     loan.estado = 'devuelto';
     loan.fechaDevolucionReal = new Date();

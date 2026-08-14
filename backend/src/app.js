@@ -38,7 +38,7 @@ app.use(
 );
 
 // Middlewares
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 app.use(morgan('dev'));
 
 // Rutas
@@ -55,6 +55,24 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({
     success: true,
     message: 'API de ToolTrack funcionando correctamente',
+  });
+});
+
+app.use((req, res) => {
+  res.status(404).json({ message: 'Ruta no encontrada' });
+});
+
+app.use((err, req, res, next) => {
+  if (err.message === 'No permitido por CORS') {
+    return res.status(403).json({ message: err.message });
+  }
+
+  console.error(err);
+  res.status(500).json({
+    message:
+      process.env.NODE_ENV === 'production'
+        ? 'Error interno del servidor'
+        : err.message,
   });
 });
 
