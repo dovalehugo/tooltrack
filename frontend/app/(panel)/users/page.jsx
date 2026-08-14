@@ -92,6 +92,11 @@ export default function UsersPage() {
       return;
     }
 
+    if (password.trim().length < 8) {
+      toast.error('La contraseña debe tener al menos 8 caracteres');
+      return;
+    }
+
     try {
       setIsCreating(true);
 

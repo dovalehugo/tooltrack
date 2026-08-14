@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import api from '@/services/api';
 import { toast } from 'react-toastify';
+import { formatDate } from '@/lib/formatDate';
 
 export default function DashboardPage() {
   const [data, setData] = useState(null);
@@ -46,11 +47,6 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchDashboard();
   }, []);
-
-  const formatDate = (date) => {
-    if (!date) return '-';
-    return new Date(date).toLocaleString();
-  };
 
   const getToolsLabel = (loan) => {
     if (!Array.isArray(loan?.tools) || loan.tools.length === 0) {

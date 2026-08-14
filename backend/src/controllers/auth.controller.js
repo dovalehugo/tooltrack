@@ -7,6 +7,18 @@ exports.register = async (req, res) => {
   try {
     const { nombre, apellido, email, password } = req.body;
 
+    if (!nombre || !apellido || !email || !password) {
+      return res.status(400).json({
+        message: 'Nombre, apellido, email y contraseña son obligatorios',
+      });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({
+        message: 'La contraseña debe tener al menos 8 caracteres',
+      });
+    }
+
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
@@ -23,7 +35,13 @@ exports.register = async (req, res) => {
       role: 'user',
     });
 
-    res.status(201).json(user);
+    res.status(201).json({
+      id: user._id,
+      nombre: user.nombre,
+      apellido: user.apellido,
+      email: user.email,
+      role: user.role,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -34,9 +52,13 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Credenciales incorrectas' });
+    }
+
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: 'Usuario no encontrado' });
+      return res.status(400).json({ message: 'Credenciales incorrectas' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);

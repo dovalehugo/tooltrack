@@ -4,10 +4,9 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import api from '@/services/api';
 import { toast } from 'react-toastify';
-import { UserPlus } from 'lucide-react';
 
 export default function EmployeeForm({ onCreated }) {
-  const { register, handleSubmit, reset } = useForm();
+  const { register, handleSubmit, reset, formState: { errors } } = useForm();
   const [role, setRole] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
 
@@ -41,27 +40,7 @@ export default function EmployeeForm({ onCreated }) {
   };
 
   return (
-    <div className="mb-8 w-full max-w-3xl rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
-      <div className="mb-6 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-          <UserPlus size={20} />
-        </div>
-
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900">
-            Nuevo empleado
-          </h2>
-          <p className="text-sm text-slate-500">
-            Añade un empleado al sistema de ToolTrack
-          </p>
-          {role === 'demo' && (
-            <p className="mt-2 text-xs text-amber-600">
-              La cuenta demo tiene un límite de creación de empleados.
-            </p>
-          )}
-        </div>
-      </div>
-
+    <div>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div className="grid gap-5 md:grid-cols-2">
           <div>
@@ -69,10 +48,13 @@ export default function EmployeeForm({ onCreated }) {
               Nombre
             </label>
             <input
-              {...register('nombre')}
+              {...register('nombre', { required: 'El nombre es obligatorio' })}
               placeholder="Ej: Hugo"
               className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
             />
+            {errors.nombre && (
+              <p className="mt-2 text-sm text-red-500">{errors.nombre.message}</p>
+            )}
           </div>
 
           <div>
@@ -80,10 +62,17 @@ export default function EmployeeForm({ onCreated }) {
               Apellido
             </label>
             <input
-              {...register('apellido')}
+              {...register('apellido', {
+                required: 'El apellido es obligatorio',
+              })}
               placeholder="Ej: Do Vale"
               className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
             />
+            {errors.apellido && (
+              <p className="mt-2 text-sm text-red-500">
+                {errors.apellido.message}
+              </p>
+            )}
           </div>
         </div>
 
@@ -92,11 +81,24 @@ export default function EmployeeForm({ onCreated }) {
             Departamento
           </label>
           <input
-            {...register('departamento')}
+            {...register('departamento', {
+              required: 'El departamento es obligatorio',
+            })}
             placeholder="Ej: Consultoría"
             className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
           />
+          {errors.departamento && (
+            <p className="mt-2 text-sm text-red-500">
+              {errors.departamento.message}
+            </p>
+          )}
         </div>
+
+        {role === 'demo' && (
+          <p className="text-xs text-amber-600">
+            La cuenta demo tiene un límite de creación de empleados.
+          </p>
+        )}
 
         <div className="flex justify-end">
           <button

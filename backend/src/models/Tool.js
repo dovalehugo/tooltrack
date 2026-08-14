@@ -23,4 +23,6 @@ const toolSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+toolSchema.index({ nombre: 1 });
+
 module.exports = mongoose.model('Tool', toolSchema);
